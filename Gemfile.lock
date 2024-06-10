@@ -101,8 +101,16 @@ GEM
       reline (>= 0.3.8)
     drb (2.2.1)
     erubi (1.12.0)
+    erubis (2.7.0)
+    excon (0.110.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
+    heroics (0.1.2)
+      erubis (~> 2.0)
+      excon
+      moneta
+      multi_json (>= 1.9.2)
+      webrick
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
     importmap-rails (2.0.1)
@@ -128,7 +136,9 @@ GEM
     matrix (0.4.2)
     mini_mime (1.1.5)
     minitest (5.23.1)
+    moneta (1.0.0)
     msgpack (1.7.2)
+    multi_json (1.15.0)
     mutex_m (0.2.0)
     net-imap (0.4.12)
       date
@@ -153,6 +163,10 @@ GEM
     nokogiri (1.16.5-x86_64-linux)
       racc (~> 1.4)
     pg (1.5.6)
+    platform-api (3.7.0)
+      heroics (~> 0.1.1)
+      moneta (~> 1.0.0)
+      rate_throttle_client (~> 0.1.0)
     psych (5.1.2)
       stringio
     public_suffix (5.0.5)
@@ -197,6 +211,7 @@ GEM
       thor (~> 1.0, >= 1.2.2)
       zeitwerk (~> 2.6)
     rake (13.2.1)
+    rate_throttle_client (0.1.2)
     rdoc (6.7.0)
       psych (>= 4.0.0)
     redis (5.2.0)
@@ -268,6 +283,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   pg
+  platform-api (~> 3.7)
   puma (>= 5.0)
   rails (~> 7.1.3, >= 7.1.3.2)
   redis (>= 4.0.1)

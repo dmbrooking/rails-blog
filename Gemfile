@@ -66,3 +66,5 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem "platform-api", "~> 3.7"
