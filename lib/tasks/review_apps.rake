@@ -19,7 +19,9 @@ namespace :review_apps do
       zone = connection.zones.find_by_name(staging_domain)
 
       [standard_sub_opts, wildcard_sub_opts].each do |opts|
-        zone.dns_records.create(opts)
+        zone.dns_records.create(opts[:type], opts[:name], opts[:content])
+      rescue Cloudflare::RequestError => e
+        next if e.message.include?('already exists')
       end
     end
 
