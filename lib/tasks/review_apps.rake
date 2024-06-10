@@ -1,6 +1,6 @@
-# namespace :review_apps do
-#   desc 'create subdomain DNS record for Heroku review app'
-#   task :publish_dns do
+namespace :review_apps do
+  desc 'create subdomain DNS record for Heroku review app'
+  task :publish_dns do
 #     require 'cloudflare'
 #     require 'platform-api'
 
@@ -43,5 +43,5 @@
 #       hostname = [subdomain_type, STAGING_DOMAIN].join('.')
 #       heroku.domain.create(heroku_app_name, hostname:)
 #     end
-#   end
-# end
+  end
+end
