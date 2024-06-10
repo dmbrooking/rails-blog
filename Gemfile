@@ -68,3 +68,5 @@ group :test do
 end
 
 gem "platform-api", "~> 3.7"
+
+gem "cloudflare", "~> 4.3"
