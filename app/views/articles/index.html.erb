@@ -1,5 +1,6 @@
 <h1>Articles</h1>
-
+<%= request.subdomain %>
+<%= request.subdomain&.split('.')&.first %>
 <ul>
   <% @articles.each do |article| %>
     <li>
