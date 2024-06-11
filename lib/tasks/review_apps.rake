@@ -25,10 +25,30 @@ namespace :review_apps do
       end
     end
 
-    # Let Heroku know about records
     [heroku_app_name, wildcard_subdomain].each do |subdomain_type|
       hostname = [subdomain_type, staging_domain].join('.')
-      heroku.domain.create(heroku_app_name, hostname:)
+      heroku.domain.create(heroku_app_name, hostname:, sni_endpoint: nil)
+    rescue Excon::Error::UnprocessableEntity => e
+      next if e.response.body.include?('already exists')
+    end
+  end
+
+  task :cleanup_dns do
+    require 'cloudflare'
+    require 'platform-api'
+
+    staging_domain     = 'hedbergism.com'
+    heroku_app_name    = ENV['HEROKU_APP_NAME']
+    wildcard_subdomain = "*.#{heroku_app_name}"
+
+    Cloudflare.connect(token: ENV['CLOUDFLARE_API_TOKEN']) do |connection|
+      zone = connection.zones.find_by_name(staging_domain)
+      zone.dns_records.each do |record|
+        [heroku_app_name, wildcard_subdomain].each do |subdomain_type|
+          hostname = [subdomain_type, staging_domain].join('.')
+          record.delete if record.type == 'CNAME' && record.name == hostname
+        end
+      end
     end
   end
 end
