@@ -4,30 +4,35 @@ namespace :review_apps do
     require 'cloudflare'
     require 'platform-api'
 
-    staging_domain     = 'hedbergism.com'
-    heroku_app_name    = ENV['HEROKU_APP_NAME']
-    wildcard_subdomain = "*.#{heroku_app_name}"
-    heroku_domain      = "#{heroku_app_name}.herokuapp.com"
-    heroku_token       = ENV['HEROKU_PLATFORM_TOKEN']
-    type               = { type: 'CNAME' }
-    standard_sub_opts  = type.merge({ name: heroku_app_name, content: heroku_domain })
-    wildcard_sub_opts  = type.merge({ name: wildcard_subdomain, content: heroku_domain })
+    staging_domain  = 'hedbergism.com'
+    heroku_app_name = ENV['HEROKU_APP_NAME']
+    subdomains      = %w[app duck oig]
+    heroku_domain   = "#{heroku_app_name}.herokuapp.com"
+    heroku_token    = ENV['HEROKU_PLATFORM_TOKEN']
+    dns_records     = []
+    type            = { type: 'CNAME' }
+
+    dns_records << type.merge({ name: heroku_app_name, content: heroku_domain })
+    subdomains.each do |sd|
+      dns_records << type.merge({ name: "#{sd}.#{heroku_app_name}", content: heroku_domain })
+    end
 
     heroku = PlatformAPI.connect_oauth heroku_token
 
     Cloudflare.connect(token: ENV['CLOUDFLARE_API_TOKEN']) do |connection|
       zone = connection.zones.find_by_name(staging_domain)
 
-      [standard_sub_opts, wildcard_sub_opts].each do |opts|
-        zone.dns_records.create(opts[:type], opts[:name], opts[:content])
+      [dns_records].each do |rec|
+        zone.dns_records.create(rec[:type], rec[:name], rec[:content])
       rescue Cloudflare::RequestError => e
         next if e.message.include?('already exists')
       end
     end
 
-    [heroku_app_name, wildcard_subdomain].each do |subdomain_type|
-      hostname = [subdomain_type, staging_domain].join('.')
+    [dns_records].each do |rec|
+      hostname = [rec[:name], staging_domain].join('.')
       heroku.domain.create(heroku_app_name, hostname:, sni_endpoint: nil)
+      heroku.app.enable_acm(heroku_app_name)
     rescue Excon::Error::UnprocessableEntity => e
       next if e.response.body.include?('already exists')
     end
@@ -37,15 +42,15 @@ namespace :review_apps do
     require 'cloudflare'
     require 'platform-api'
 
-    staging_domain     = 'hedbergism.com'
-    heroku_app_name    = ENV['HEROKU_APP_NAME']
-    wildcard_subdomain = "*.#{heroku_app_name}"
+    staging_domain  = 'hedbergism.com'
+    heroku_app_name = ENV['HEROKU_APP_NAME']
+    domains         = [heroku_app_name, "app.#{heroku_app_name}", "duck.#{heroku_app_name}", "oig.#{heroku_app_name}"]
 
     Cloudflare.connect(token: ENV['CLOUDFLARE_API_TOKEN']) do |connection|
       zone = connection.zones.find_by_name(staging_domain)
       zone.dns_records.each do |record|
-        [heroku_app_name, wildcard_subdomain].each do |subdomain_type|
-          hostname = [subdomain_type, staging_domain].join('.')
+        [domains].each do |domain|
+          hostname = [domain, staging_domain].join('.')
           record.delete if record.type == 'CNAME' && record.name == hostname
         end
       end
