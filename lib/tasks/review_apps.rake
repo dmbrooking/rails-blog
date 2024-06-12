@@ -22,14 +22,14 @@ namespace :review_apps do
     Cloudflare.connect(token: ENV['CLOUDFLARE_API_TOKEN']) do |connection|
       zone = connection.zones.find_by_name(staging_domain)
 
-      [dns_records].each do |rec|
+      dns_records.each do |rec|
         zone.dns_records.create(rec[:type], rec[:name], rec[:content])
       rescue Cloudflare::RequestError => e
         next if e.message.include?('already exists')
       end
     end
 
-    [dns_records].each do |rec|
+    dns_records.each do |rec|
       hostname = [rec[:name], staging_domain].join('.')
       heroku.domain.create(heroku_app_name, hostname:, sni_endpoint: nil)
       heroku.app.enable_acm(heroku_app_name)
@@ -49,7 +49,7 @@ namespace :review_apps do
     Cloudflare.connect(token: ENV['CLOUDFLARE_API_TOKEN']) do |connection|
       zone = connection.zones.find_by_name(staging_domain)
       zone.dns_records.each do |record|
-        [domains].each do |domain|
+        domains.each do |domain|
           hostname = [domain, staging_domain].join('.')
           record.delete if record.type == 'CNAME' && record.name == hostname
         end
